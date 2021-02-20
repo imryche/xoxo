@@ -3,7 +3,8 @@ from game import (
     find_best_move,
     get_possible_board,
     get_possible_moves,
-    get_score,
+    board_score,
+    cells_score,
     move
 )
 
@@ -46,13 +47,23 @@ def test_makes_forbidden_move():
         move(board, 0, 0, False)
 
 
+def test_evaluates_maximizing_score():
+    row = [True, True, True]
+    assert cells_score(row, 3) == 7
+
+
+def test_evaluates_non_maximizing_score():
+    row = [False, False, False]
+    assert cells_score(row, 3) == -7
+
+
 def test_horizontal_win():
     board = [
         [False, None, None],
         [True, True, True],
         [False, None, False]
     ]
-    assert get_score(board) == 10
+    assert board_score(board) == 10
 
 
 def test_vertical_win():
@@ -61,7 +72,7 @@ def test_vertical_win():
         [None, True, False],
         [None, True, False]
     ]
-    assert get_score(board) == -10
+    assert board_score(board) == -10
 
 
 def test_diagonal_one_win():
@@ -70,7 +81,7 @@ def test_diagonal_one_win():
         [None, True, None],
         [None, False, True]
     ]
-    assert get_score(board) == 10
+    assert board_score(board) == 10
 
 
 def test_diagonal_two_win():
@@ -79,7 +90,7 @@ def test_diagonal_two_win():
         [None, False, None],
         [False, True, True]
     ]
-    assert get_score(board) == -10
+    assert board_score(board) == -10
 
 
 def test_nobody_won():
@@ -88,7 +99,7 @@ def test_nobody_won():
         [None, True, None],
         [None, True, False]
     ]
-    assert get_score(board) == 0
+    assert board_score(board) == 0
 
 
 def test_possible_moves():

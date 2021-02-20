@@ -21,20 +21,23 @@ def move(board, row, col, maximizing):
         raise ValueError("cell is occupied")
 
 
-def get_score(board, depth=0):
-    for row in board:
-        if all(cell for cell in row):
+def cells_score(cells, depth):
+    if len(cells) > 0 and all(cell == cells[0] for cell in cells):
+        if cells[0]:
             return 10 - depth
-        if all(cell is False for cell in row):
-            return -10 - depth
+        return depth - 10
+
+
+def board_score(board, depth=0):
+    for row in board:
+        if (score := cells_score(row, depth)) is not None:
+            return score
 
     size = len(board)
     for col_idx in range(size):
         col = [board[row][col_idx] for row in range(size)]
-        if all(cell for cell in col):
-            return 10 - depth
-        if all(cell is False for cell in col):
-            return -10 - depth
+        if (score := cells_score(col, depth)) is not None:
+            return score
 
     diagonals = [
         [board[i][i] for i in range(size)],
@@ -42,10 +45,8 @@ def get_score(board, depth=0):
     ]
 
     for diagonal in diagonals:
-        if all(cell for cell in diagonal):
-            return 10 - depth
-        if all(cell is False for cell in diagonal):
-            return -10 - depth
+        if (score := cells_score(diagonal, depth)) is not None:
+            return score
 
     return 0
 
@@ -66,21 +67,8 @@ def get_possible_board(board, move, is_maximizing):
     return board
 
 
-def find_best_move(board):
-    best_move = None
-    best_val = -math.inf
-    for move in get_possible_moves(board):
-        possible_board = get_possible_board(board, move, True)
-        val = minimax(possible_board, 0, True)
-        if val > best_val:
-            best_val = val
-            best_move = move
-
-    return best_move
-
-
 def minimax(board, depth, is_maximizing):
-    score = get_score(board, depth)
+    score = board_score(board, depth)
     if score:
         return score
 
@@ -101,3 +89,16 @@ def minimax(board, depth, is_maximizing):
         return get_best_value(-math.inf, max)
     else:
         return get_best_value(math.inf, min)
+
+
+def find_best_move(board):
+    best_move = None
+    best_val = -math.inf
+    for move in get_possible_moves(board):
+        possible_board = get_possible_board(board, move, True)
+        val = minimax(possible_board, 0, True)
+        if val > best_val:
+            best_val = val
+            best_move = move
+
+    return best_move
