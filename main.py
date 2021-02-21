@@ -4,7 +4,7 @@ from typing import Optional
 
 import databases
 import sqlalchemy as sa
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Form
 from fastapi import status as http_status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
@@ -85,7 +85,7 @@ class UserInDB(User):
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 app = FastAPI()
 
@@ -103,6 +103,12 @@ async def get_user(username):
     user = await database.fetch_one(query)
     if user:
         return UserInDB(**user)
+
+
+async def create_user(username, password):
+    hashed_password = get_password_hash(password)
+    query = users.insert().values(username=username, password=hashed_password)
+    await database.execute(query)
 
 
 async def authenticate_user(username: str, password: str):
@@ -213,7 +219,7 @@ async def read_moves(token: str = Depends(oauth2_scheme)):
     return await database.fetch_all(query)
 
 
-@app.post("/token")
+@app.post("/login/")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = await authenticate_user(form_data.username, form_data.password)
     if not user:
@@ -229,6 +235,20 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     )
 
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.post("/register/", status_code=http_status.HTTP_201_CREATED)
+async def register(
+    username: str = Form(..., min_length=3, max_length=50),
+    password: str = Form(..., min_length=3, max_length=50, regex=r"^\w+$"),
+):
+    if await get_user(username):
+        raise HTTPException(
+            status_code=http_status.HTTP_400_BAD_REQUEST,
+            detail="User with this username already exists.",
+        )
+
+    await create_user(username, password)
 
 
 @app.get("/users/me")
