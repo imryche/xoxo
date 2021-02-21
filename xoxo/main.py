@@ -12,8 +12,8 @@ from xoxo.db import (
     database,
     get_last_move,
     get_user,
-    moves,
     get_session_moves,
+    get_session_time,
 )
 from xoxo.game import (
     Status,
@@ -83,7 +83,8 @@ async def play(move: Move, current_user: User = Depends(get_current_user)):
 
     if status != Status.ACTIVE:
         moves = await get_session_moves(session)
-        return {"status": status, "moves": moves}
+        session_time = await get_session_time(session)
+        return {"status": status, "session_time": session_time, "moves": moves}
 
     return {"status": status, "move": ai_move, "board": board}
 

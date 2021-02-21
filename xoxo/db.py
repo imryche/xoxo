@@ -71,3 +71,11 @@ async def get_last_move(user_id):
 async def get_session_moves(session):
     query = moves.select().where(moves.c.session == session)
     return await database.fetch_all(query)
+
+
+async def get_session_time(session):
+    query = (
+        "select max(created_at) - min(created_at) as time from moves "
+        "where session = :session"
+    )
+    return await database.execute(query, {"session": session})
