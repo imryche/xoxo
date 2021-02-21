@@ -50,6 +50,7 @@ moves = sa.Table(
     sa.Column(
         "created_at", sa.DateTime, server_default=sa.sql.functions.now(), nullable=False
     ),
+    sa.Column("user_id", sa.ForeignKey(users.c.id, ondelete="CASCADE"), nullable=False),
 )
 
 
@@ -76,6 +77,7 @@ class TokenData(BaseModel):
 
 
 class User(BaseModel):
+    id: int
     username: str
 
 
@@ -170,7 +172,7 @@ async def shutdown():
 
 
 @app.post("/play/")
-async def play(player_move: PlayerMove):
+async def play(player_move: PlayerMove, current_user: User = Depends(get_current_user)):
     query = moves.select().order_by(sa.desc(moves.c.created_at))
     last_board = await database.fetch_one(query)
     board = None
@@ -191,6 +193,7 @@ async def play(player_move: PlayerMove):
             is_ai=False,
             status=status.value,
             board=board,
+            user_id=current_user.id,
         )
         await database.execute(query)
 
@@ -201,7 +204,12 @@ async def play(player_move: PlayerMove):
         print("ai:", status)
 
         query = moves.insert().values(
-            row=ai_move[0], col=ai_move[1], is_ai=True, status=status.value, board=board
+            row=ai_move[0],
+            col=ai_move[1],
+            is_ai=True,
+            status=status.value,
+            board=board,
+            user_id=current_user.id,
         )
         await database.execute(query)
 
