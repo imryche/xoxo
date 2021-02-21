@@ -4,6 +4,7 @@ import databases
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import ARRAY
 from xoxo.schemas import UserInDB
+from xoxo.password import get_password_hash
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 
@@ -12,7 +13,6 @@ database = databases.Database(DATABASE_URL)
 engine = sa.create_engine(DATABASE_URL)
 
 metadata = sa.MetaData()
-metadata.create_all(engine)
 
 users = sa.Table(
     "users",
@@ -36,6 +36,8 @@ moves = sa.Table(
     ),
     sa.Column("user_id", sa.ForeignKey(users.c.id, ondelete="CASCADE"), nullable=False),
 )
+
+metadata.create_all(engine)
 
 
 async def get_user(username):
