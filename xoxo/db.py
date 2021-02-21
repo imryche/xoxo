@@ -56,3 +56,12 @@ async def create_user(username, password):
 async def create_move(**values):
     query = moves.insert().values(**values)
     await database.execute(query)
+
+
+async def get_last_move(user_id):
+    query = (
+        moves.select()
+        .where(moves.c.user_id == user_id)
+        .order_by(sa.desc(moves.c.created_at))
+    )
+    return await database.fetch_one(query)

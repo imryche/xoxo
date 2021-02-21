@@ -1,18 +1,17 @@
 from datetime import timedelta
 
-import sqlalchemy as sa
 from fastapi import Depends, FastAPI, Form, HTTPException
 from fastapi import status as http_status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from xoxo.auth import authenticate_user, create_access_token, get_current_user
-from xoxo.db import create_move, create_user, database, get_user, moves
+from xoxo.db import create_move, create_user, database, get_last_move, get_user, moves
 from xoxo.game import (
     BoardStatus,
     check_board_status,
     find_best_move,
     make_move,
-    print_board
+    print_board,
 )
 from xoxo.schemas import PlayerMove, User
 
@@ -34,11 +33,9 @@ async def shutdown():
 
 @app.post("/play/")
 async def play(player_move: PlayerMove, current_user: User = Depends(get_current_user)):
-    query = moves.select().order_by(sa.desc(moves.c.created_at))
-    last_board = await database.fetch_one(query)
-    board = None
-    if last_board and last_board["status"] == BoardStatus.ACTIVE.value:
-        board = last_board["board"]
+    last_move = get_last_move(current_user.id)
+    if last_move and last_move["status"] == BoardStatus.ACTIVE.value:
+        board = last_move["board"]
     else:
         board = [[None, None, None], [None, None, None], [None, None, None]]
 
