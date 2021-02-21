@@ -46,7 +46,6 @@ async def play(player_move: PlayerMove, current_user: User = Depends(get_current
     if player_move.has_move():
         make_move(board, (player_move.row, player_move.col), True)
         status = check_board_status(board)
-        print("player:", status)
 
         await create_move(
             row=player_move.row,
@@ -61,7 +60,6 @@ async def play(player_move: PlayerMove, current_user: User = Depends(get_current
         ai_move = find_best_move(board)
         make_move(board, ai_move, False)
         status = check_board_status(board)
-        print("ai:", status)
 
         await create_move(
             row=ai_move[0],
