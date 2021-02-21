@@ -1,7 +1,8 @@
-from typing import Optional, List
+from typing import Optional
 
 import databases
 import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import ARRAY
 from fastapi import FastAPI
 from pydantic import BaseModel
 
@@ -24,9 +25,14 @@ moves = sa.Table(
     "moves",
     metadata,
     sa.Column("id", sa.Integer, primary_key=True),
-    sa.Column("row", sa.Integer),
-    sa.Column("col", sa.Integer),
-    sa.Column("is_ai", sa.Boolean),
+    sa.Column("row", sa.Integer, nullable=False),
+    sa.Column("col", sa.Integer, nullable=False),
+    sa.Column("is_ai", sa.Boolean, nullable=False),
+    sa.Column("status", sa.String, nullable=False),
+    sa.Column("board", ARRAY(sa.Boolean), nullable=False),
+    sa.Column(
+        "created_at", sa.DateTime, server_default=sa.sql.functions.now(), nullable=False
+    ),
 )
 
 
@@ -89,7 +95,7 @@ async def play(player_move: PlayerMove):
     return {"status": status, "move": ai_move, "board": board}
 
 
-@app.get("/moves/", response_model=List[Move])
+@app.get("/moves/")
 async def read_moves():
     query = moves.select()
     return await database.fetch_all(query)
