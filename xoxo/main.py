@@ -88,7 +88,7 @@ async def play(player_move: PlayerMove, current_user: User = Depends(get_current
 
 
 @app.get("/moves")
-async def read_moves(token: str = Depends(oauth2_scheme)):
+async def read_moves():
     query = moves.select()
     return await database.fetch_all(query)
 

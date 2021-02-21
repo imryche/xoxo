@@ -2,28 +2,18 @@ import os
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from xoxo.db import get_user
 from xoxo.schemas import TokenData
+from xoxo.password import verify_password
 
 SECRET_KEY = os.environ["SECRET_KEY"]
 ALGORITHM = "HS256"
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
-
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password):
-    return pwd_context.hash(password)
 
 
 async def authenticate_user(username: str, password: str):
