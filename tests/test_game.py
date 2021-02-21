@@ -4,11 +4,21 @@ from xoxo.game import (
     board_score,
     cells_score,
     check_board_status,
+    create_board,
     find_best_move,
     get_possible_moves,
     make_move,
     undo_move
 )
+
+
+def test_creates_empty_board():
+    board = create_board(3)
+    assert len(board) == 3
+    for row in board:
+        assert len(row) == 3
+        for cell in row:
+            assert cell is None
 
 
 def test_maximizing_makes_move():

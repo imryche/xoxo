@@ -21,6 +21,10 @@ def print_board(board):
     print()
 
 
+def create_board(size):
+    return [[None] * size for _ in range(size)]
+
+
 def make_move(board, move, player):
     if board[move[0]][move[1]] is None:
         board[move[0]][move[1]] = player
