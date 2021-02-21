@@ -37,6 +37,7 @@ metadata.create_all(engine)
 class Action(BaseModel):
     row: Optional[int] = None
     col: Optional[int] = None
+    size: Optional[int] = 3
 
     def has_move(self):
         return all(v is not None for v in (self.row, self.col))
