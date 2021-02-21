@@ -89,12 +89,6 @@ async def play(move: Move, current_user: User = Depends(get_current_user)):
     return {"status": status, "move": ai_move, "board": board}
 
 
-@app.get("/moves")
-async def read_moves():
-    query = moves.select()
-    return await database.fetch_all(query)
-
-
 @app.post("/login/")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = await authenticate_user(form_data.username, form_data.password)
@@ -125,8 +119,3 @@ async def register(
         )
 
     await create_user(username, password)
-
-
-@app.get("/users/me")
-async def read_users_me(current_user: User = Depends(get_current_user)):
-    return current_user
