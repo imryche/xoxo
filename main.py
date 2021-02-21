@@ -30,7 +30,7 @@ moves = sa.Table(
 )
 
 
-engine = sa.create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+engine = sa.create_engine(DATABASE_URL)
 metadata.create_all(engine)
 
 
