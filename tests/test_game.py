@@ -1,11 +1,13 @@
 import pytest
 from xoxo.game import (
+    BoardStatus,
     board_score,
+    cells_score,
+    check_board_status,
     find_best_move,
     get_possible_moves,
     make_move,
-    undo_move,
-    cells_score
+    undo_move
 )
 
 
@@ -142,6 +144,42 @@ def test_nobody_won():
         [None, True, False]
     ]
     assert board_score(board) is None
+
+
+def test_board_status_is_active():
+    board = [
+        [True, None, False],
+        [None, True, None],
+        [None, True, False]
+    ]
+    assert check_board_status(board) == BoardStatus.ACTIVE
+
+
+def test_board_status_is_won():
+    board = [
+        [True, True, False],
+        [None, True, None],
+        [None, True, False]
+    ]
+    assert check_board_status(board) == BoardStatus.WON
+
+
+def test_board_status_is_lost():
+    board = [
+        [True, True, False],
+        [None, True, False],
+        [None, None, False]
+    ]
+    assert check_board_status(board) == BoardStatus.LOST
+
+
+def test_board_status_is_tie():
+    board = [
+        [True, True, False],
+        [False, True, True],
+        [True, False, False]
+    ]
+    assert check_board_status(board) == BoardStatus.TIE
 
 
 def test_possible_moves():
