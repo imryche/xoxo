@@ -33,7 +33,7 @@ async def shutdown():
 
 @app.post("/play/")
 async def play(player_move: PlayerMove, current_user: User = Depends(get_current_user)):
-    last_move = get_last_move(current_user.id)
+    last_move = await get_last_move(current_user.id)
     if last_move and last_move["status"] == BoardStatus.ACTIVE.value:
         board = last_move["board"]
     else:
