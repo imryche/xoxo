@@ -14,7 +14,7 @@ from xoxo.game import (
 )
 
 
-DATABASE_URL = "sqlite:///xoxo.db"
+DATABASE_URL = "postgres://localhost/xoxo"
 
 database = databases.Database(DATABASE_URL)
 
