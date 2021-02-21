@@ -2,3 +2,5 @@ pytest==6.2.2
 fastapi==0.63.0
 uvicorn==0.13.3
 databases[sqlite]==0.4.1
+asyncpg==0.22.0
+psycopg2==2.8.6
