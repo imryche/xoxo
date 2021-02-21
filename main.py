@@ -43,13 +43,6 @@ class PlayerMove(BaseModel):
         return all(v is not None for v in (self.row, self.col))
 
 
-class Move(BaseModel):
-    id: int
-    row: int
-    col: int
-    is_ai: bool
-
-
 app = FastAPI()
 
 
