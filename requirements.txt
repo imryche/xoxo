@@ -4,3 +4,6 @@ uvicorn==0.13.3
 databases[sqlite]==0.4.1
 asyncpg==0.22.0
 psycopg2==2.8.6
+python-multipart==0.0.5
+python-jose==3.2.0
+passlib[bcrypt]==1.7.4
