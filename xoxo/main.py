@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from xoxo.auth import authenticate_user, create_access_token, get_current_user
 from xoxo.db import create_move, create_user, database, get_last_move, get_user, moves
 from xoxo.game import (
-    BoardStatus,
+    Status,
     check_board_status,
     create_board,
     find_best_move,
@@ -35,12 +35,11 @@ async def shutdown():
 @app.post("/play/")
 async def play(player_move: PlayerMove, current_user: User = Depends(get_current_user)):
     last_move = await get_last_move(current_user.id)
-    if last_move and last_move["status"] == BoardStatus.ACTIVE.value:
+    if last_move and last_move["status"] == Status.ACTIVE:
         board = last_move["board"]
     else:
         board = create_board(player_move.size)
 
-    status = BoardStatus.ACTIVE
     if player_move.has_move():
         make_move(board, (player_move.row, player_move.col), True)
         status = check_board_status(board)
@@ -49,12 +48,12 @@ async def play(player_move: PlayerMove, current_user: User = Depends(get_current
             row=player_move.row,
             col=player_move.col,
             is_ai=False,
-            status=status.value,
+            status=status,
             board=board,
             user_id=current_user.id,
         )
 
-    if status not in (BoardStatus.WON, BoardStatus.TIE):
+    if status not in (Status.WON, Status.TIE):
         ai_move = find_best_move(board)
         make_move(board, ai_move, False)
         status = check_board_status(board)
@@ -63,12 +62,12 @@ async def play(player_move: PlayerMove, current_user: User = Depends(get_current
             row=ai_move[0],
             col=ai_move[1],
             is_ai=True,
-            status=status.value,
+            status=status,
             board=board,
             user_id=current_user.id,
         )
 
-    if status != BoardStatus.ACTIVE:
+    if status != Status.ACTIVE:
         return {"status": status}
 
     print_board(board)

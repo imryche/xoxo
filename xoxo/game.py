@@ -1,8 +1,7 @@
 import math
-from enum import Enum
 
 
-class BoardStatus(Enum):
+class Status:
     ACTIVE = "active"
     TIE = "tie"
     WON = "won"
@@ -68,13 +67,13 @@ def board_score(board, depth=0):
 def check_board_status(board):
     score = board_score(board)
     if score == 10:
-        return BoardStatus.WON
+        return Status.WON
     elif score == -10:
-        return BoardStatus.LOST
+        return Status.LOST
     elif score == 0:
-        return BoardStatus.TIE
+        return Status.TIE
 
-    return BoardStatus.ACTIVE
+    return Status.ACTIVE
 
 
 def get_possible_moves(board):
