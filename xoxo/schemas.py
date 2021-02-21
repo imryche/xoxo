@@ -2,9 +2,9 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class PlayerMove(BaseModel):
-    row: Optional[int] = None
-    col: Optional[int] = None
+class Move(BaseModel):
+    row: int
+    col: int
     size: Optional[int] = 3
 
     def has_move(self):

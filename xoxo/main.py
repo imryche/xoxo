@@ -14,7 +14,7 @@ from xoxo.game import (
     make_move,
     print_board,
 )
-from xoxo.schemas import PlayerMove, User
+from xoxo.schemas import Move, User
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
@@ -33,44 +33,42 @@ async def shutdown():
 
 
 @app.post("/play/")
-async def play(player_move: PlayerMove, current_user: User = Depends(get_current_user)):
+async def play(move: Move, current_user: User = Depends(get_current_user)):
     last_move = await get_last_move(current_user.id)
     if last_move and last_move["status"] == Status.ACTIVE:
         board = last_move["board"]
     else:
-        board = create_board(player_move.size)
+        board = create_board(move.size)
 
-    if player_move.has_move():
-        make_move(board, (player_move.row, player_move.col), True)
-        status = check_board_status(board)
+    make_move(board, (move.row, move.col), True)
+    status = check_board_status(board)
 
-        await create_move(
-            row=player_move.row,
-            col=player_move.col,
-            is_ai=False,
-            status=status,
-            board=board,
-            user_id=current_user.id,
-        )
+    await create_move(
+        row=move.row,
+        col=move.col,
+        is_ai=False,
+        status=status,
+        board=board,
+        user_id=current_user.id,
+    )
 
-    if status not in (Status.WON, Status.TIE):
-        ai_move = find_best_move(board)
-        make_move(board, ai_move, False)
-        status = check_board_status(board)
+    ai_move = find_best_move(board)
+    make_move(board, ai_move, False)
+    status = check_board_status(board)
 
-        await create_move(
-            row=ai_move[0],
-            col=ai_move[1],
-            is_ai=True,
-            status=status,
-            board=board,
-            user_id=current_user.id,
-        )
+    await create_move(
+        row=ai_move[0],
+        col=ai_move[1],
+        is_ai=True,
+        status=status,
+        board=board,
+        user_id=current_user.id,
+    )
+
+    print_board(board)
 
     if status != Status.ACTIVE:
         return {"status": status}
-
-    print_board(board)
 
     return {"status": status, "move": ai_move, "board": board}
 
