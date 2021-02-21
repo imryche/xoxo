@@ -62,11 +62,16 @@ async def shutdown():
     await database.disconnect()
 
 
-board = [[None, None, None], [None, None, None], [None, None, None]]
-
-
 @app.post("/play/")
 async def play(player_move: PlayerMove):
+    query = moves.select().order_by(sa.desc(moves.c.created_at))
+    last_board = await database.fetch_one(query)
+    board = None
+    if last_board and last_board["status"] == BoardStatus.ACTIVE.value:
+        board = last_board["board"]
+    else:
+        board = [[None, None, None], [None, None, None], [None, None, None]]
+
     status = BoardStatus.ACTIVE
     if player_move.has_move():
         make_move(board, (player_move.row, player_move.col), True)
@@ -74,7 +79,11 @@ async def play(player_move: PlayerMove):
         print("player:", status)
 
         query = moves.insert().values(
-            row=player_move.row, col=player_move.col, is_ai=True
+            row=player_move.row,
+            col=player_move.col,
+            is_ai=False,
+            status=status.value,
+            board=board,
         )
         await database.execute(query)
 
@@ -84,7 +93,9 @@ async def play(player_move: PlayerMove):
         status = check_board_status(board)
         print("ai:", status)
 
-        query = moves.insert().values(row=ai_move[0], col=ai_move[1], is_ai=False)
+        query = moves.insert().values(
+            row=ai_move[0], col=ai_move[1], is_ai=True, status=status.value, board=board
+        )
         await database.execute(query)
 
     if status != BoardStatus.ACTIVE:
