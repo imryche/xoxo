@@ -1,11 +1,11 @@
 import pytest
-from game import (
-    find_best_move,
-    get_possible_board,
-    get_possible_moves,
+from xoxo.game import (
     board_score,
-    cells_score,
-    move
+    find_best_move,
+    get_possible_moves,
+    make_move,
+    undo_move,
+    cells_score
 )
 
 
@@ -15,7 +15,7 @@ def test_maximizing_makes_move():
         [None, False, True],
         [False, None, False]
     ]
-    move(board, 0, 1, True)
+    make_move(board, (0, 1), True)
     assert board == [
         [True, True, True],
         [None, False, True],
@@ -29,7 +29,7 @@ def test_non_maximizing_makes_move():
         [None, False, True],
         [False, None, False]
     ]
-    move(board, 2, 1, False)
+    make_move(board, (2, 1), False)
     assert board == [
         [True, None, True],
         [None, False, True],
@@ -44,20 +44,35 @@ def test_makes_forbidden_move():
         [False, None, False]
     ]
     with pytest.raises(ValueError):
-        move(board, 0, 0, False)
+        make_move(board, (0, 0), False)
 
 
-def test_evaluates_maximizing_score():
-    row = [True, True, True]
-    assert cells_score(row, 3) == 7
+def test_undoes_move():
+    board = [
+        [True, None, True],
+        [None, False, True],
+        [False, None, False]
+    ]
+    undo_move(board, (1, 1))
+    assert board[1][1] is None
 
 
-def test_evaluates_non_maximizing_score():
-    row = [False, False, False]
-    assert cells_score(row, 3) == -7
+def test_cells_have_positive_score():
+    cells = [True, True, True]
+    assert cells_score(cells) == 10
 
 
-def test_horizontal_win():
+def test_cells_have_negative_score():
+    cells = [False, False, False]
+    assert cells_score(cells) == -10
+
+
+def test_cells_have_no_score():
+    cells = [False, None, True]
+    assert cells_score(cells) is None
+
+
+def test_horizontal_true_win():
     board = [
         [False, None, None],
         [True, True, True],
@@ -66,7 +81,25 @@ def test_horizontal_win():
     assert board_score(board) == 10
 
 
-def test_vertical_win():
+def test_horizontal_false_win():
+    board = [
+        [True, None, None],
+        [False, False, False],
+        [True, None, True]
+    ]
+    assert board_score(board) == -10
+
+
+def test_vertical_true_win():
+    board = [
+        [False, None, True],
+        [None, False, True],
+        [None, False, True]
+    ]
+    assert board_score(board) == 10
+
+
+def test_vertical_false_win():
     board = [
         [True, None, False],
         [None, True, False],
@@ -93,13 +126,22 @@ def test_diagonal_two_win():
     assert board_score(board) == -10
 
 
+def test_tie():
+    board = [
+        [True, True, False],
+        [False, False, True],
+        [True, False, True]
+    ]
+    assert board_score(board) == 0
+
+
 def test_nobody_won():
     board = [
         [True, None, False],
         [None, True, None],
         [None, True, False]
     ]
-    assert board_score(board) == 0
+    assert board_score(board) is None
 
 
 def test_possible_moves():
@@ -122,46 +164,31 @@ def test_no_possible_moves_left():
     assert get_possible_moves(board) == []
 
 
-def test_possible_board_created():
-    board = [
-        [True, None, None],
-        [False, False, True],
-        [False, True, False]
-    ]
-    possible_board = get_possible_board(board, (0, 1), is_maximizing=True)
-    assert possible_board == [
-        [True, True, None],
-        [False, False, True],
-        [False, True, False]
-    ]
-    assert board is not possible_board
-
-
 def test_find_obvious_moves():
     board = [
-        [True, False, True],
-        [False, False, True],
+        [False, False, None],
+        [False, True, None],
+        [True, None, None]
+    ]
+    assert find_best_move(board) == (0, 2)
+
+    board = [
+        [False, True, None],
+        [None, True, None],
         [None, None, None]
     ]
-    assert find_best_move(board) == (2, 2)
+    assert find_best_move(board) == (2, 1)
 
     board = [
-        [True, False, False],
-        [None, False, None],
-        [None, True, True]
-    ]
-    assert find_best_move(board) == (2, 0)
-
-    board = [
-        [True, False, True],
-        [True, False, False],
-        [None, None, False]
-    ]
-    assert find_best_move(board) == (2, 0)
-
-    board = [
-        [True, False, True],
-        [False, False, None],
-        [None, None, True]
+        [False, True, False],
+        [True, True, None],
+        [True, False, None]
     ]
     assert find_best_move(board) == (1, 2)
+
+    board = [
+        [False, False, None],
+        [True, True, False],
+        [True, None, None]
+    ]
+    assert find_best_move(board) == (0, 2)
