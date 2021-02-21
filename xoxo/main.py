@@ -73,7 +73,7 @@ async def play(player_move: PlayerMove, current_user: User = Depends(get_current
         )
 
     if status != BoardStatus.ACTIVE:
-        return {"status": status, "move": ai_move}
+        return {"status": status}
 
     print_board(board)
 
