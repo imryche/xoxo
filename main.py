@@ -82,7 +82,7 @@ async def play(action: Action):
         status = check_board_status(board)
         print("ai:", status)
 
-        query = moves.insert().values(row=action.row, col=action.col, is_user=False)
+        query = moves.insert().values(row=ai_move[0], col=ai_move[1], is_user=False)
         await database.execute(query)
 
     if status != BoardStatus.ACTIVE:
