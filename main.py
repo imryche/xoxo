@@ -34,7 +34,7 @@ engine = sa.create_engine(DATABASE_URL, connect_args={"check_same_thread": False
 metadata.create_all(engine)
 
 
-class Action(BaseModel):
+class PlayerMove(BaseModel):
     row: Optional[int] = None
     col: Optional[int] = None
     size: Optional[int] = 3
@@ -67,14 +67,16 @@ board = [[None, None, None], [None, None, None], [None, None, None]]
 
 
 @app.post("/play/")
-async def play(action: Action):
+async def play(player_move: PlayerMove):
     status = BoardStatus.ACTIVE
-    if action.has_move():
-        make_move(board, (action.row, action.col), True)
+    if player_move.has_move():
+        make_move(board, (player_move.row, player_move.col), True)
         status = check_board_status(board)
         print("player:", status)
 
-        query = moves.insert().values(row=action.row, col=action.col, is_user=True)
+        query = moves.insert().values(
+            row=player_move.row, col=player_move.col, is_user=True
+        )
         await database.execute(query)
 
     if status not in (BoardStatus.WON, BoardStatus.TIE):
