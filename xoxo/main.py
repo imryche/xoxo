@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 
 from fastapi import Depends, FastAPI, Form, HTTPException
@@ -5,7 +6,15 @@ from fastapi import status as http_status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from xoxo.auth import authenticate_user, create_access_token, get_current_user
-from xoxo.db import create_move, create_user, database, get_last_move, get_user, moves
+from xoxo.db import (
+    create_move,
+    create_user,
+    database,
+    get_last_move,
+    get_user,
+    moves,
+    get_session_moves,
+)
 from xoxo.game import (
     Status,
     check_board_status,
@@ -35,8 +44,10 @@ async def shutdown():
 @app.post("/play/")
 async def play(move: Move, current_user: User = Depends(get_current_user)):
     last_move = await get_last_move(current_user.id)
+    session = uuid.uuid4()
     if last_move and last_move["status"] == Status.ACTIVE:
         board = last_move["board"]
+        session = last_move["session"]
     else:
         board = create_board(move.size)
 
@@ -49,26 +60,30 @@ async def play(move: Move, current_user: User = Depends(get_current_user)):
         is_ai=False,
         status=status,
         board=board,
+        session=session,
         user_id=current_user.id,
     )
 
-    ai_move = find_best_move(board)
-    make_move(board, ai_move, False)
-    status = check_board_status(board)
+    if status not in (Status.TIE, Status.WON):
+        ai_move = find_best_move(board)
+        make_move(board, ai_move, False)
+        status = check_board_status(board)
 
-    await create_move(
-        row=ai_move[0],
-        col=ai_move[1],
-        is_ai=True,
-        status=status,
-        board=board,
-        user_id=current_user.id,
-    )
+        await create_move(
+            row=ai_move[0],
+            col=ai_move[1],
+            is_ai=True,
+            status=status,
+            board=board,
+            session=session,
+            user_id=current_user.id,
+        )
 
     print_board(board)
 
     if status != Status.ACTIVE:
-        return {"status": status}
+        moves = await get_session_moves(session)
+        return {"status": status, "moves": moves}
 
     return {"status": status, "move": ai_move, "board": board}
 

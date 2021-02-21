@@ -2,7 +2,7 @@ import os
 
 import databases
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from xoxo.schemas import UserInDB
 from xoxo.password import get_password_hash
 
@@ -30,6 +30,7 @@ moves = sa.Table(
     sa.Column("col", sa.Integer, nullable=False),
     sa.Column("is_ai", sa.Boolean, nullable=False),
     sa.Column("status", sa.String, nullable=False),
+    sa.Column("session", UUID, nullable=False),
     sa.Column("board", ARRAY(sa.Boolean), nullable=False),
     sa.Column(
         "created_at", sa.DateTime, server_default=sa.sql.functions.now(), nullable=False
@@ -65,3 +66,8 @@ async def get_last_move(user_id):
         .order_by(sa.desc(moves.c.created_at))
     )
     return await database.fetch_one(query)
+
+
+async def get_session_moves(session):
+    query = moves.select().where(moves.c.session == session)
+    return await database.fetch_all(query)
