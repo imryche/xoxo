@@ -47,7 +47,7 @@ class Move(BaseModel):
     id: int
     row: int
     col: int
-    is_user: bool
+    is_ai: bool
 
 
 app = FastAPI()
@@ -75,7 +75,7 @@ async def play(player_move: PlayerMove):
         print("player:", status)
 
         query = moves.insert().values(
-            row=player_move.row, col=player_move.col, is_user=True
+            row=player_move.row, col=player_move.col, is_ai=True
         )
         await database.execute(query)
 
@@ -85,7 +85,7 @@ async def play(player_move: PlayerMove):
         status = check_board_status(board)
         print("ai:", status)
 
-        query = moves.insert().values(row=ai_move[0], col=ai_move[1], is_user=False)
+        query = moves.insert().values(row=ai_move[0], col=ai_move[1], is_ai=False)
         await database.execute(query)
 
     if status != BoardStatus.ACTIVE:
