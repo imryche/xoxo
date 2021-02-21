@@ -9,6 +9,7 @@ from xoxo.db import create_move, create_user, database, get_last_move, get_user,
 from xoxo.game import (
     BoardStatus,
     check_board_status,
+    create_board,
     find_best_move,
     make_move,
     print_board,
@@ -37,7 +38,7 @@ async def play(player_move: PlayerMove, current_user: User = Depends(get_current
     if last_move and last_move["status"] == BoardStatus.ACTIVE.value:
         board = last_move["board"]
     else:
-        board = [[None, None, None], [None, None, None], [None, None, None]]
+        board = create_board(player_move.size)
 
     status = BoardStatus.ACTIVE
     if player_move.has_move():
