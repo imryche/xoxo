@@ -26,7 +26,7 @@ moves = sa.Table(
     sa.Column("id", sa.Integer, primary_key=True),
     sa.Column("row", sa.Integer),
     sa.Column("col", sa.Integer),
-    sa.Column("is_user", sa.Boolean),
+    sa.Column("is_ai", sa.Boolean),
 )
 
 
