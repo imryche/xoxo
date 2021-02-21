@@ -5,19 +5,14 @@ from fastapi import Depends, FastAPI, Form, HTTPException
 from fastapi import status as http_status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from xoxo.auth import (
-    authenticate_user,
-    create_access_token,
-    get_current_user,
-    oauth2_scheme,
-)
-from xoxo.db import create_user, database, get_user, moves
+from xoxo.auth import authenticate_user, create_access_token, get_current_user
+from xoxo.db import create_move, create_user, database, get_user, moves
 from xoxo.game import (
     BoardStatus,
     check_board_status,
     find_best_move,
     make_move,
-    print_board,
+    print_board
 )
 from xoxo.schemas import PlayerMove, User
 
@@ -53,7 +48,7 @@ async def play(player_move: PlayerMove, current_user: User = Depends(get_current
         status = check_board_status(board)
         print("player:", status)
 
-        query = moves.insert().values(
+        await create_move(
             row=player_move.row,
             col=player_move.col,
             is_ai=False,
@@ -61,7 +56,6 @@ async def play(player_move: PlayerMove, current_user: User = Depends(get_current
             board=board,
             user_id=current_user.id,
         )
-        await database.execute(query)
 
     if status not in (BoardStatus.WON, BoardStatus.TIE):
         ai_move = find_best_move(board)
@@ -69,7 +63,7 @@ async def play(player_move: PlayerMove, current_user: User = Depends(get_current
         status = check_board_status(board)
         print("ai:", status)
 
-        query = moves.insert().values(
+        await create_move(
             row=ai_move[0],
             col=ai_move[1],
             is_ai=True,
@@ -77,7 +71,6 @@ async def play(player_move: PlayerMove, current_user: User = Depends(get_current
             board=board,
             user_id=current_user.id,
         )
-        await database.execute(query)
 
     if status != BoardStatus.ACTIVE:
         return {"status": status, "move": ai_move}

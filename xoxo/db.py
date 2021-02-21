@@ -51,3 +51,8 @@ async def create_user(username, password):
     hashed_password = get_password_hash(password)
     query = users.insert().values(username=username, password=hashed_password)
     await database.execute(query)
+
+
+async def create_move(**values):
+    query = moves.insert().values(**values)
+    await database.execute(query)
