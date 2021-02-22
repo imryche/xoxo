@@ -70,6 +70,7 @@ async def play(move: Move, current_user: User = Depends(get_current_user)):
         user_id=current_user.id,
     )
 
+    ai_move = None
     if status not in (Status.TIE, Status.WON):
         ai_move = find_best_move(board)
         make_move(board, ai_move, False)
