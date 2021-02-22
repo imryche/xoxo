@@ -28,7 +28,13 @@ from xoxo.schemas import Move, User
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 
-app = FastAPI()
+app = FastAPI(
+    title="Tic Tac Toe",
+    description=(
+        "This service provides an API to play "
+        "tic tac toe game against computer opponent."
+    ),
+)
 
 
 @app.on_event("startup")
